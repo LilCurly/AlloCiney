@@ -2,6 +2,7 @@ package com.example.allociney
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.GridLayoutManager
@@ -9,15 +10,19 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.allociney.item.MovieItem
 import com.example.allociney.model.Movie
+import com.example.allociney.network.MovieService
+import com.example.allociney.network.data.MovieResult
 import com.google.gson.Gson
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import kotlinx.android.synthetic.main.activity_main.*
-import retrofit2.Retrofit
+import retrofit2.*
 import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var movieService: MovieService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,5 +73,21 @@ class MainActivity : AppCompatActivity() {
             .baseUrl("https://api.themoviedb.org/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+
+        movieService = retrofit.create(MovieService::class.java)
+
+        // SYNCHRONE
+        //val result = movieService.getMovies("alien").execute().body()
+
+        val result = movieService.getMovies("alien").enqueue(object: Callback<MovieResult> {
+            override fun onFailure(call: Call<MovieResult>, t: Throwable) {
+                Log.e("AlloCiney", "error ${t.localizedMessage}")
+            }
+
+            override fun onResponse(call: Call<MovieResult>, response: Response<MovieResult>) {
+                val movies = response.body()?.results ?: emptyArray()
+            }
+
+        })
     }
 }

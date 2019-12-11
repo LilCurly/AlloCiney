@@ -3,6 +3,7 @@ package com.example.allociney.item
 import android.view.View
 import com.example.allociney.R
 import com.example.allociney.model.Movie
+import com.example.allociney.network.data.MovieData
 import com.example.allociney.viewholder.MovieViewHolder
 import com.mikepenz.fastadapter.items.AbstractItem
 
