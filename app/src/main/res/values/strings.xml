@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">AlloCiney</string>
+    <string name="movie_title_format">Title : %s</string>
+</resources>
