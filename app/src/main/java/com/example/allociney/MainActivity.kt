@@ -9,10 +9,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.allociney.item.MovieItem
 import com.example.allociney.model.Movie
+import com.google.gson.Gson
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import kotlinx.android.synthetic.main.activity_main.*
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : AppCompatActivity() {
 
@@ -60,5 +63,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
             true
         }
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://api.themoviedb.org/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
     }
 }
