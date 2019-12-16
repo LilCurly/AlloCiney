@@ -1,11 +1,15 @@
 package com.example.allociney
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import android.view.View
 import android.widget.SearchView
+import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -76,22 +80,39 @@ class MainActivity : AppCompatActivity() {
         //val result = movieService.getMovies("alien").execute().body()
         movieSearchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                resolveQuery(movieService, query ?: "")
-                return true
+                if (!query.isNullOrBlank()) {
+                    movieSearchView.clearFocus()
+                    resolveQuery(movieService, query)
+                    return true
+                }
+                refresh(emptyArray())
+                return false
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 val safeQuery = newText ?: ""
-                val querySize = safeQuery.length
 
-                if (querySize < 3) {
-                    return false
+                return when (safeQuery.length) {
+                    0 -> {
+                        refresh(emptyArray())
+                        false
+                    }
+                    1,3 -> {
+                        false
+                    }
+                    else -> {
+                        resolveQuery(movieService, safeQuery, 200)
+                        true
+                    }
                 }
-                resolveQuery(movieService, safeQuery, 200)
-                return true
             }
 
         })
+
+        movieSearchView.setOnCloseListener {
+            refresh(emptyArray())
+            true
+        }
     }
 
     private fun resolveQuery(movieService: MovieService, queryName: String = "a", delay: Long = 0) {
