@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">AlloCiney</string>
     <string name="movie_title_format">Title : %s</string>
+    <string name="search">Search</string>
+    <string name="movie_name_hint">Movie name</string>
 </resources>

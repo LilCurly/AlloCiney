@@ -7,7 +7,7 @@ import com.example.allociney.network.data.MovieData
 import com.example.allociney.viewholder.MovieViewHolder
 import com.mikepenz.fastadapter.items.AbstractItem
 
-class MovieItem(val movie: Movie): AbstractItem<MovieViewHolder>() {
+class MovieItem(val movie: MovieData): AbstractItem<MovieViewHolder>() {
 
     override val layoutRes: Int
         get() = R.layout.row_movie
