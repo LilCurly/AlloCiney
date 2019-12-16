@@ -2,8 +2,10 @@ package com.example.allociney
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.View
+import android.widget.SearchView
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,11 +25,15 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var handler: Handler
+    private var runnableSearch: Runnable? = null
     private lateinit var movieService: MovieService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        handler = Handler()
 
 //        val listMovies = mutableListOf<Movie>()
 //
@@ -68,26 +74,55 @@ class MainActivity : AppCompatActivity() {
 
         // SYNCHRONE
         //val result = movieService.getMovies("alien").execute().body()
-
-        searchMoviesButton.setOnClickListener {
-            val queryName = searchMoviesEditText.text.toString()
-            resolveQuery(movieService, queryName)
-        }
-    }
-
-    private fun resolveQuery(movieService: MovieService, queryName: String = "a") {
-        val result = movieService.getMovies(queryName).enqueue(object: Callback<MovieResult> {
-            override fun onFailure(call: Call<MovieResult>, t: Throwable) {
-                Log.e("AlloCiney", "error ${t.localizedMessage}")
+        movieSearchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                resolveQuery(movieService, query ?: "")
+                return true
             }
 
-            override fun onResponse(call: Call<MovieResult>, response: Response<MovieResult>) {
-                val movies = response.body()?.results ?: emptyArray()
+            override fun onQueryTextChange(newText: String?): Boolean {
+                val safeQuery = newText ?: ""
+                val querySize = safeQuery.length
 
-                refresh(movies)
+                if (querySize < 3) {
+                    return false
+                }
+                resolveQuery(movieService, safeQuery, 200)
+                return true
             }
 
         })
+    }
+
+    private fun resolveQuery(movieService: MovieService, queryName: String = "a", delay: Long = 0) {
+
+        if (runnableSearch is Runnable) {
+            handler.removeCallbacks(runnableSearch!!)
+        }
+
+        val runnable = Runnable {
+            movieService.getMovies(queryName).enqueue(object: Callback<MovieResult> {
+                override fun onFailure(call: Call<MovieResult>, t: Throwable) {
+                    Log.e("AlloCiney", "error ${t.localizedMessage}")
+                }
+
+                override fun onResponse(call: Call<MovieResult>, response: Response<MovieResult>) {
+                    val movies = response.body()?.results ?: emptyArray()
+
+                    refresh(movies)
+                }
+
+            })
+        }
+
+        handler.postDelayed(runnable, delay)
+        this.runnableSearch = runnable
+
+        //requestSearchMovies?.cancel()
+
+        //requestSearchMovies = movieService.getMovies(queryName)
+
+
     }
 
     private fun refresh(movies: Array<MovieData>) {
